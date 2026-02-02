@@ -2,6 +2,34 @@
 let isProcessing = false;
 let tesseractLoaded = false;
 let html2canvasLoaded = false;
+let html2canvasLoadPromise = null;
+
+// Function to ensure html2canvas is loaded
+async function ensureHtml2canvasLoaded() {
+  if (typeof html2canvas !== 'undefined') {
+    return Promise.resolve();
+  }
+  
+  if (html2canvasLoadPromise) {
+    return html2canvasLoadPromise;
+  }
+  
+  html2canvasLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+      html2canvasLoaded = true;
+      resolve();
+    };
+    script.onerror = () => {
+      reject(new Error('Failed to load html2canvas library'));
+    };
+    document.head.appendChild(script);
+  });
+  
+  return html2canvasLoadPromise;
+}
 
 // Function to pause all videos on the page
 function pauseAllVideos() {
@@ -58,6 +86,9 @@ async function takeScreenshot() {
   isProcessing = true;
   
   try {
+    // Ensure html2canvas is loaded before proceeding
+    await ensureHtml2canvasLoaded();
+    
     // Get settings from storage
     const settings = await chrome.storage.sync.get({
       pauseVideos: true
@@ -265,14 +296,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Load html2canvas library once on page load
+// Pre-load html2canvas library on page load for better performance
 // Note: For production, consider bundling libraries locally or using SRI hashes
-if (!html2canvasLoaded) {
-  const html2canvasScript = document.createElement('script');
-  html2canvasScript.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-  html2canvasScript.crossOrigin = 'anonymous';
-  html2canvasScript.onload = () => {
-    html2canvasLoaded = true;
-  };
-  document.head.appendChild(html2canvasScript);
-}
+ensureHtml2canvasLoaded().catch(err => {
+  console.error('Failed to pre-load html2canvas:', err);
+});
