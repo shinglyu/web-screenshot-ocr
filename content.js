@@ -1,5 +1,7 @@
 // Content script for capturing screenshots and pausing videos
 let isProcessing = false;
+let tesseractLoaded = false;
+let html2canvasLoaded = false;
 
 // Function to pause all videos on the page
 function pauseAllVideos() {
@@ -19,14 +21,21 @@ function pauseAllVideos() {
 // Function to perform OCR on the captured screenshot
 async function performOCR(imageData) {
   try {
-    // Dynamically import tesseract.js
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    document.head.appendChild(script);
-    
-    await new Promise((resolve) => {
-      script.onload = resolve;
-    });
+    // Load Tesseract.js only once
+    // Note: For production, consider bundling libraries locally or using SRI hashes
+    if (!tesseractLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      script.crossOrigin = 'anonymous';
+      document.head.appendChild(script);
+      
+      await new Promise((resolve) => {
+        script.onload = () => {
+          tesseractLoaded = true;
+          resolve();
+        };
+      });
+    }
     
     const worker = await Tesseract.createWorker('eng');
     const result = await worker.recognize(imageData);
@@ -200,7 +209,6 @@ function displayResults(imageData, ocrText) {
     font-family: monospace;
     resize: vertical;
   `;
-  textArea.readOnly = false;
   
   const copyButton = document.createElement('button');
   copyButton.textContent = 'Copy Text';
@@ -214,13 +222,22 @@ function displayResults(imageData, ocrText) {
     cursor: pointer;
     font-size: 14px;
   `;
-  copyButton.onclick = () => {
-    textArea.select();
-    document.execCommand('copy');
-    copyButton.textContent = 'Copied!';
-    setTimeout(() => {
-      copyButton.textContent = 'Copy Text';
-    }, 2000);
+  copyButton.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(textArea.value);
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy Text';
+      }, 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      textArea.select();
+      document.execCommand('copy');
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => {
+        copyButton.textContent = 'Copy Text';
+      }, 2000);
+    }
   };
   
   content.appendChild(closeButton);
@@ -248,7 +265,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Load html2canvas library
-const html2canvasScript = document.createElement('script');
-html2canvasScript.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-document.head.appendChild(html2canvasScript);
+// Load html2canvas library once on page load
+// Note: For production, consider bundling libraries locally or using SRI hashes
+if (!html2canvasLoaded) {
+  const html2canvasScript = document.createElement('script');
+  html2canvasScript.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+  html2canvasScript.crossOrigin = 'anonymous';
+  html2canvasScript.onload = () => {
+    html2canvasLoaded = true;
+  };
+  document.head.appendChild(html2canvasScript);
+}
