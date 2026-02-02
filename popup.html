@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Screenshot OCR</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .section {
+      margin-bottom: 15px;
+    }
+    
+    .info {
+      background-color: #e3f2fd;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: #1976d2;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    button.secondary {
+      background-color: #2196F3;
+    }
+    
+    button.secondary:hover {
+      background-color: #0b7dda;
+    }
+    
+    .shortcut {
+      font-family: monospace;
+      background-color: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    
+    .preview {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    #ocrResult {
+      width: 100%;
+      min-height: 100px;
+      margin-top: 10px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>📸 Screenshot OCR</h1>
+  
+  <div class="info">
+    Press <span class="shortcut">Ctrl+Shift+S</span> (or <span class="shortcut">Cmd+Shift+S</span> on Mac) to capture a screenshot and extract text!
+  </div>
+  
+  <div class="section">
+    <button id="captureBtn">Take Screenshot Now</button>
+    <button id="optionsBtn" class="secondary">⚙️ Settings</button>
+  </div>
+  
+  <div class="section">
+    <img id="preview" class="preview" alt="Screenshot preview">
+    <textarea id="ocrResult" readonly></textarea>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
