@@ -1,0 +1,27 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Build artifacts (if any)
+dist/
+build/
+
+# Node modules (if using npm for development)
+node_modules/
+
+# Icon generation files
+icons/*.svg
+icons/*.js
+icons/*.sh
+icons/*.html
